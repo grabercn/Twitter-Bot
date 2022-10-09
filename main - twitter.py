@@ -2,7 +2,7 @@ from asyncio.windows_events import INFINITE
 from logging import error
 import tweepy
 import pyjokes
-from credentials import consumer_key, consumer_secret, access_token, access_token_secret
+from credentials import consumer_key, consumer_secret, access_token, access_token_secret, user_id
 from prompts import wait, prompted, Repeat
 import time
 from termcolor import colored
@@ -22,12 +22,23 @@ except:
 
 # Create a tweet 
 def genTweet():
-  try:
-    My_joke = pyjokes.get_joke(language="en", category="all")
-  except:
-    print(colored("- Error - \nError finding joke", "red", attrs=[]))
-    my_joke = "error"
-  return My_joke
+  if prompted == "joke": # Generate a tweet using py jokes
+    try:
+      My_joke = pyjokes.get_joke(language="en", category="all")
+    except:
+      print(colored("- Error - \nError finding joke", "red", attrs=[]))
+      my_joke = "error"
+    return My_joke
+  
+  elif prompted == "quote": # Generate a tweet using tweet generator
+    #try:
+    from tweet_generator import tweet_generator
+    twitter_bot = tweet_generator.PersonTweeter(user_id,consumer_key,consumer_secret,access_token,access_token_secret)
+    random_tweet = twitter_bot.generate_random_tweet()
+    #except:
+      #print(colored("- Error - \nError finding quote", "red", attrs=[]))
+      #random_tweet = "error: "+str(time.time())
+    return random_tweet
 
 
 # =================== Main ===================

@@ -11,7 +11,7 @@ except:
     wait = 0
 
 try:
-    prompted = str(input("Prompt: "))
+    prompted = str(input("Prompt (joke, quote): "))
 except:
     print(colored("- Error - \nInvalid Prompt", "red", attrs=[]))
     prompted = "error"
