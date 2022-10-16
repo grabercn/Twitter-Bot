@@ -1,3 +1,9 @@
+from termcolor import colored # pre import colored
+# Notify prog run via main file
+text = colored('-Run via Main-', 'yellow', attrs=['reverse', 'blink'])
+print(text)
+
+# imports ---------------------------------
 from asyncio.windows_events import INFINITE
 from ctypes import ArgumentError
 from email.mime import image
@@ -9,7 +15,7 @@ import pyjokes
 from credentials import consumer_key, consumer_secret, access_token, access_token_secret, user_id, nasa_api
 from prompts import wait, prompted, Repeat
 import time
-from termcolor import colored
+# imports end -------------------------------
 
 # =============== Helper Functions ===============
 def getPromptedParam():
@@ -74,7 +80,7 @@ def genTweet():
   elif prompted == "sentence":
     import random
 
-    gvn_names=["Me", "I", "you", "He", "She", "They", "We","Lukas","Seyour64","Andrew"]
+    gvn_names=["He", "She", "Lukas","Seyour64","Andrew","Jeffrey Dahmer"]
     gvn_verbs=["was","is","tried","had fun","did not have fun","enjoyed","fucked"]
     gvn_nouns=["eating.", "writing", "watching a movie", "reading.", "sleeping.", "dancing.","beating.","breaking.","fucking.","sliding.","cumming."]
 
@@ -83,6 +89,11 @@ def genTweet():
     r =(random.choice(gvn_nouns))
 
     return (str(p+" "+q+" "+r)), Empty
+
+  elif prompted == "delete":
+    import tweetdeleter
+    
+  return "Tweets Deleted:"+time, Empty
 
 
 # =================== Main ===================

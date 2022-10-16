@@ -1,7 +1,9 @@
 from termcolor import colored
 import subprocess
 
-text = colored('-Program Started-', 'blue', attrs=['reverse', 'blink'])
+
+
+text = colored('-Program Started-', 'green', attrs=['reverse', 'blink'])
 print(text)
 
 wait = 0
@@ -20,6 +22,7 @@ def main():
         except:
             print("Error: "+str(do))
             break
+        
         
         if do == "tweet":
             try:
@@ -42,6 +45,13 @@ def main():
                 print(colored("- Error - \nInvalid Repeat", "red", attrs=[]))
                 Repeat = 1
             break
+        
+        elif "tweet" in do:
+            wait = int(do.split(" ")[1])
+            prompted = str(do.split(" ")[2])
+            Repeat = int(do.split(" ")[3])
+            break
+        
         
 main()
 
