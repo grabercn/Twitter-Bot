@@ -24,6 +24,21 @@ def getPromptedParam():
   except IndexError:
     print(colored("- Error - \nInvalid Prompt", "red", attrs=[]))
     return "Error"
+  
+def range_with_status(total):
+    """ iterate from 0 to total and show progress in console """
+    n=0
+    while n<total:
+        done = '#'*(n+1)
+        todo = '-'*(total-n-1)
+        s = '<{0}>'.format(done+todo)
+        if not todo:
+            s+='\n'        
+        if n>0:
+            s = '\r'+s
+        print(s, end='')
+        yield n
+        n+=1
      
       
 # =============== Twitter API =================
@@ -90,11 +105,6 @@ def genTweet():
 
     return (str(p+" "+q+" "+r)), Empty
 
-  elif prompted == "delete":
-    import tweetdeleter
-    
-  return "Tweets Deleted:"+time, Empty
-
 
 # =================== Main ===================
 
@@ -114,8 +124,9 @@ for i in range(Repeat):
       print(colored("- Error - \nError posting Tweet", "red", attrs=[]))
     
     
-    twe = colored('- Tweeted - \n', 'cyan', attrs=[])
+    twe = colored('- Tweeted '+str(i+1)+"/"+str(Repeat)+" -\n", 'cyan', attrs=[])
     print (twe + "--> " + str(tweeted))
    
-   
-    time.sleep(wait) # wait for the next tweet
+
+    for i in range_with_status(wait):
+      time.sleep(0.1)

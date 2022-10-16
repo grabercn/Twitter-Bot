@@ -46,11 +46,16 @@ def main():
                 Repeat = 1
             break
         
+        elif do == "remove":
+            break
+        
         elif "tweet" in do:
             wait = int(do.split(" ")[1])
             prompted = str(do.split(" ")[2])
             Repeat = int(do.split(" ")[3])
+            wait = wait * 60
             break
+        
         
         
 main()
