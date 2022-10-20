@@ -16,22 +16,24 @@ import pyjokes
 from credentials import consumer_key, consumer_secret, access_token, access_token_secret, user_id, nasa_api
 import time
 from termcolor import colored
+from tqdm import tqdm
+
 # imports end -------------------------------
 
 # =============== Helper Functions ===============
-def curTime():
+def curTime(): # get current time and return it (str)
   now = datetime.now()
   return now.strftime("%H:%M:%S")
   
 
-def getPromptedParam():
+def getPromptedParam(prompted): # get prompted param and return it (str)
   try:
     return prompted.split(" ")[1]
   except IndexError:
     print(colored("- Error - \nInvalid Prompt", "red", attrs=[]))
     return "Error"
   
-def range_with_status(total):
+def range_with_status(total): # range with status for prog bar
     """ iterate from 0 to total and show progress in console """
     n=0
     while n<total:
@@ -45,6 +47,30 @@ def range_with_status(total):
         print(s, end='')
         yield n
         n+=1
+        
+def waitDef(wait): # set wait time depending on input and return (int)
+  try:
+    wait = int(wait)
+  except TypeError:
+    print("wait time is string")
+    time = getPromptedParam(wait)
+    wait = wait.split(" ")[0]
+    
+    if wait == "Error":
+      return 0
+    elif wait == "hours":
+      return int(time) * 3600
+    elif wait == "minutes":
+      return int(time) * 60
+    elif wait == "seconds":
+      return int(time)
+    elif wait == "days":
+      return int(time) * 86400
+    else:
+      return int(time)
+  
+  return wait*60
+  
 
 # =============== Helper Functions End ===============
 
@@ -70,10 +96,10 @@ def Prompts():
     
     if do == "tweet":
         try:
-            wait = int(input("Time (m) between tweets: "))
-            wait = wait * 60
-        except:
-            print(colored("- Error - \nInvalid Time", "red", attrs=[]))
+            wait = str(input("Time (m) between tweets: "))
+            wait = waitDef(wait)
+        except Exception as e:
+            print(colored("- Error - \n"+str(e), "red", attrs=[]))
             wait = 1
 
         try:
@@ -92,6 +118,7 @@ def Prompts():
     
     elif do == "api":
         Twitter()
+    
     elif do == "error":
       if (Error != ""):
         print(colored("- Error at "+curTime()+" - \n"+str(Error), "red", attrs=[]))
@@ -166,7 +193,7 @@ def genTweet():
   elif prompted == "folder": # Generate a tweet using dalle api
     import glob, random
     
-    file_path_type = [getPromptedParam()]
+    file_path_type = [getPromptedParam(prompted)]
     images = glob.glob(random.choice(file_path_type))
     random_image = random.choice(images)
     
@@ -176,12 +203,14 @@ def genTweet():
     import random
     from random import randint
 
-    gvn_names=["John","Grace","Freddy Fazbear","Donald J Trump","Barack Obama","Joey Spats","Seyour64","Andrew NoVatsney","John McAffee","Joseph","Dan","Dan Beard","Dan Bread"]
+    gvn_names=["John","Grace","Freddy Fazbear","Donald J Trump","Barack Obama","Joey Spats","Seyour64","Andrew NoVatsney","John McAffee","Joseph","Dan","Dan Beard","Dan Bread",
+               "Danny","Pickachu","Charizard","Elon Musk","Jeff Bezos"]
     gvn_verbs=["tried","had fun","did not have fun","enjoyed","fucked","thoroughly enjoyed","was ecstatic","tried to jump",
                "eventually ended up","loved","was eloped when","got wet","got eaten when trying","'s first time","has never",
                "sometimes like/s to take nice walks. On these walks, sometimes there are a bunch of weird people in suits",
                "smacked,","licked","hugged","smothered","got saucy","meated","creamed","melted"]
-    gvn_nouns=["eating", "writing", "watching a movie", "reading", "sleeping", "dancing","beating","breaking","fucking","sliding","cumming","dating"]
+    gvn_nouns=["eating", "writing", "watching a movie", "reading", "sleeping", "dancing","beating","breaking","fucking","sliding","cumming","dating","frisking","slipping",
+               "running","slapping","biting","kissing"]
 
     na1 =(random.choice(gvn_names))
     na2 = (random.choice(gvn_names))
@@ -246,10 +275,9 @@ def main():
       twe = colored('- Tweeted '+str(i+1)+"/"+str(Repeat)+" -\n", 'cyan', attrs=[])
       print (twe + "--> " + str(tweeted))
     
-
-      for i in range_with_status(wait):
-        time.sleep(0.1)
-
+      for i in tqdm(range(int(wait))):
+        time.sleep(1)
+  
   prompted = ""
   Prompts()
   
