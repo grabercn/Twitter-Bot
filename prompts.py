@@ -1,7 +1,6 @@
+from queue import Empty
 from termcolor import colored
 import subprocess
-
-
 
 text = colored('-Program Started-', 'green', attrs=['reverse', 'blink'])
 print(text)
@@ -9,6 +8,7 @@ print(text)
 wait = 0
 prompted = ""
 Repeat = 0
+blank = 0 # just a blank var to use as import
 
 def main():
     
@@ -55,9 +55,10 @@ def main():
             Repeat = int(do.split(" ")[3])
             wait = wait * 60
             break
+    
         
-        
-        
-main()
 
-print('- ok -\n')
+
+main()
+print("- ok - \n")
+
