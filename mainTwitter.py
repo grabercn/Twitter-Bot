@@ -1,6 +1,7 @@
+from datetime import datetime
 from termcolor import colored # pre import colored
 # Notify prog run via main file
-text = colored('-Run via Main-', 'yellow', attrs=['reverse', 'blink'])
+text = colored('-Program Intializing-', 'blue', attrs=['reverse', 'blink'])
 print(text)
 
 # imports ---------------------------------
@@ -18,6 +19,11 @@ from termcolor import colored
 # imports end -------------------------------
 
 # =============== Helper Functions ===============
+def curTime():
+  now = datetime.now()
+  return now.strftime("%H:%M:%S")
+  
+
 def getPromptedParam():
   try:
     return prompted.split(" ")[1]
@@ -39,10 +45,19 @@ def range_with_status(total):
         print(s, end='')
         yield n
         n+=1
-    
-def Prompts():
 
-  text = colored('-Program Started-', 'green', attrs=['reverse', 'blink'])
+# =============== Helper Functions End ===============
+
+
+# =============== Prompt Function ===============
+
+def Prompts():
+  
+  global prompted
+  global Repeat
+  global wait
+  global Error
+  
   print(text)
 
   while True:
@@ -75,8 +90,14 @@ def Prompts():
             Repeat = 1
         break
     
-    elif do == "remove":
-        break
+    elif do == "api":
+        Twitter()
+    elif do == "error":
+      if (Error != ""):
+        print(colored("- Error at "+curTime()+" - \n"+str(Error), "red", attrs=[]))
+        Error = ""
+      else:
+        print("--> No recent errors")
     
     elif "tweet" in do:
         wait = int(do.split(" ")[1])
@@ -84,28 +105,34 @@ def Prompts():
         Repeat = int(do.split(" ")[3])
         wait = wait * 60
         break
-
-  print("- ok - \n")
-
-
-
-
-
-
-     
       
+    elif do == "exit":
+        exit()
+    
+  main()
+  print("- ok - \n")
+  Prompts()
+
+# =============== Prompt Function End ===============
+
+
 # =============== Twitter API =================
+def Twitter():
+  global Error
+  global api
+  
+  auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+  auth.set_access_token(access_token, access_token_secret)
 
-auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-
-# Create API object
-try:
-  api = tweepy.API(auth)
-  text = colored('- API OK -', 'green', attrs=[])
-  print(text)
-except:
-  print(colored("- Error - \nAPI connection issue", "red", attrs=[]))
+  # Create API object
+  try:
+    api = tweepy.API(auth)
+    api.verify_credentials()
+    text = colored('- API OK -', 'green', attrs=[])
+    print(text)
+  except Exception as e:
+    Error = e
+    print(colored("- Error - \nAPI Connection Issue: type 'error' for details", "red", attrs=[]))
 
 # Create a tweet 
 def genTweet():
@@ -192,6 +219,13 @@ def genTweet():
 # =================== Main ===================
 
 def main():
+  
+  global api
+  global Error
+  global Repeat
+  global wait
+  global prompted
+  
   if Repeat == 0:
     Repeat = INFINITE
 
@@ -204,8 +238,9 @@ def main():
       
       try: 
         api.update_status(status = tweeted) # Create a tweet
-      except:
+      except Exception as e:
         print(colored("- Error - \nError posting Tweet "+str(i)+"/"+str(Repeat), "red", attrs=[]))
+        Error = e
       
       
       twe = colored('- Tweeted '+str(i+1)+"/"+str(Repeat)+" -\n", 'cyan', attrs=[])
@@ -216,13 +251,17 @@ def main():
         time.sleep(0.1)
 
   prompted = ""
-
-  print("- end -\n")
+  Prompts()
   
   
 
 wait = 0 # init global wait var
 prompted = "" # init global prompt var
 Repeat = 0 # init global repeat var
+Error = "" # init global error var
+api = "" # init global api var
 
+text = colored('-Program Started-', 'green', attrs=['reverse', 'blink'])
+
+Twitter() # call twitter API
 Prompts() # call prompts function to start program
