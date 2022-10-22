@@ -1,3 +1,10 @@
+# Twitter Bot Main - Main File containing all functions and main loop
+# - Author: @chrismslist
+# - Date: 10/22/2022
+# - Version: 0.5 beta
+# - To do: fix sentence structure, add more jokes, add more quotes, add more tweets, add more features
+
+# =============== Imports =================
 from array import array
 from datetime import datetime
 from random import randint, random
@@ -6,7 +13,7 @@ from termcolor import colored # pre import colored
 text = colored('-Program Intializing-', 'blue', attrs=['reverse', 'blink'])
 print(text)
 
-# imports ---------------------------------
+
 from asyncio.windows_events import INFINITE
 from ctypes import ArgumentError
 from email.mime import image
@@ -20,7 +27,7 @@ import time
 from termcolor import colored
 from tqdm import tqdm
 
-# imports end -------------------------------
+# =============== Imports End =================
 
 # =============== Helper Functions ===============
 def curTime(): # get current time and return it (str)
