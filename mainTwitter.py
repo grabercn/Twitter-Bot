@@ -1,6 +1,6 @@
 from array import array
 from datetime import datetime
-from random import randint
+from random import randint, random
 from termcolor import colored # pre import colored
 
 text = colored('-Program Intializing-', 'blue', attrs=['reverse', 'blink'])
@@ -72,6 +72,33 @@ def waitDef(wait): # set wait time depending on input and return (int)
       return int(time)
   
   return wait*60
+
+
+def twitterRates():
+    stats = api.rate_limit_status()  #stats['resources'].keys()
+    for akey in stats['resources'].keys():
+        if type(stats['resources'][akey]) == dict:
+            for anotherkey in stats['resources'][akey].keys():
+                if type(stats['resources'][akey][anotherkey]) == dict:
+                    #print(akey, anotherkey, stats['resources'][akey][anotherkey])
+                    limit = (stats['resources'][akey][anotherkey]['limit'])
+                    remaining = (stats['resources'][akey][anotherkey]['remaining'])
+                    used = limit - remaining
+                    if used != 0:
+                        print("Twitter API used", used, ": Remaining queries", remaining,"for query type", anotherkey)
+                    else:
+                        pass
+                else:
+                    pass  #print("Passing")  #stats['resources'][akey]
+        else:
+            print(akey, stats['resources'][akey])
+            print(stats['resources'][akey].keys())
+            limit = (stats['resources'][akey]['limit'])
+            remaining = (stats['resources'][akey]['remaining'])
+            used = limit - remaining
+            if used != 0:
+                print("Twitter API:", used, "requests used,", remaining, "remaining, for API queries to", akey)
+                pass
   
 
 # =============== Helper Functions End ===============
@@ -122,6 +149,9 @@ def Prompts():
     elif do == "api":
         Twitter()
     
+    elif do == "limit":
+      twitterRates()
+    
     elif do == "error":
       if (Error != ""):
         print(colored("- Error at "+curTime()+" - \n"+str(Error), "red", attrs=[]))
@@ -159,7 +189,7 @@ def Twitter():
 
   # Create API object
   try:
-    api = tweepy.API(auth)
+    api = tweepy.API(auth, wait_on_rate_limit=True)
     api.verify_credentials()
     text = colored('- API OK -', 'green', attrs=[])
     print(text)
@@ -285,7 +315,8 @@ def main():
   
 def auto():
   
-  import json
+  import names
+  import random
   
   global prompted
   global wait
@@ -294,11 +325,13 @@ def auto():
   global Repeat
   
   actions = []
+  lastAction = []
 
   
   while True:
     
-    choice = randint(1,5)
+    choice = randint(1,7)
+    print("Action:"+str(choice))
     
     if choice == 1: # decide randomly on what to tweet then tweet it
       actions.append("Tweeted a random tweet")
@@ -324,9 +357,9 @@ def auto():
       actions.append("Retrieving mentions")
     for tweet in tweepy.Cursor(api.mentions_timeline, tweet_mode="extended").items():
         if not tweet.favorited:
-            actions.append(f"Favoriting {tweet.id} - {tweet.text}")
+            actions.append(f"Favoriting {tweet.id} - {tweet.full_text}")
             tweet.favorite()
-        if not tweet.user.following:
+        if not tweet.user.following and tweet.user.screen_name != "FoodNetworke":
             actions.append(f"Following {tweet.user.name}")
             tweet.user.follow()
         if not tweet.in_reply_to_status_id:
@@ -338,7 +371,7 @@ def auto():
         if tweet.in_reply_to_status_id is not None:
             continue
         if any(keyword in tweet.text.lower() for keyword in ["joke", "jokes"]):
-            actions.append(("Answering to {tweet.user.name}"))
+            actions.append((f"Answering to {tweet.user.name}"))
 
             if not tweet.user.following:
                 tweet.user.follow()
@@ -350,28 +383,69 @@ def auto():
             
     if choice == 4: # retweet tweets from timeline
       
-      for tweet in tweepy.Cursor(api.home_timeline, tweet_mode="extended").items():
+      for tweet in tweepy.Cursor(api.home_timeline).items(randint(1,20)):
         try:
           tweet.retweet()
-          actions.append("Retweeted a tweet from timeline")
-        except tweepy.TweepError as e:
-          print(e.reason)
+          actions.append(f"Retweeted {tweet.text} from timeline")
+        except:
+          pass
           
     if choice == 5: # like tweets from timeline
-      for tweet in tweepy.Cursor(api.home_timeline, tweet_mode="extended").items():
+      for tweet in tweepy.Cursor(api.home_timeline).items(randint(1,20)):
         if not tweet.favorited:
           tweet.favorite()
-          actions.append("Favorited a tweet from timeline")
+          actions.append(f"Favorited {tweet.text} from timeline")
+        else:
+          pass
+          
+          
+    if choice == 6: # comment on tweets from timeline
+       for tweet in tweepy.Cursor(api.home_timeline).items(randint(1,20)):
+         if not tweet.in_reply_to_status_id:
+            prompted = "sentence"
+            api.update_status(
+                status = f"@{tweet.user.screen_name} {str(genTweet()[0])}",
+                in_reply_to_status_id = tweet.id,
+            )
+            actions.append(f"Commented on {tweet.text} from timeline")
     
-    print("Latest Action:"+str(actions[len(actions)-1]))
-    
-    
+    if choice ==7 : # follow random people
+      tweets = list(tweepy.Cursor(api.search_users, q="a", tweet_mode='extended').items(randint(1,20)))
+      random.shuffle(tweets)
+      for tweet in tweets:
+        try:
+          tweet.follow()
+          actions.append(f"Followed {tweet.name} randomly")
+          break
+        except:
+          pass
 
-    with open('autoLog.txt', 'w') as filehandle:
-      json.dump(array.toList(), filehandle)
+    try:
+      if lastAction != actions[len(actions)-1]:
+        print(colored("Latest Action:"+str(actions[len(actions)-1]), 'green'))
+      else:
+        print(colored("Latest Action: No New Actions", 'yellow'))
+      lastAction = actions[len(actions)-1]
+    except IndexError:
+      print(colored("No actions yet", 'yellow'))
+      
+      
+      
+      
+      
+      
+    # save actions to a file and wait for a random amount of time  
     
+    with open("autoLog.txt", "w") as txt_file:
+      try:
+        for line in actions:
+            txt_file.write(" ".join(line) + "\n") # works with any number of elements in a line
+      except:
+        pass
+      
     print("Waiting 60 seconds")
     time.sleep(2)
+    #time.sleep(randint(10,120))
     
             
             
