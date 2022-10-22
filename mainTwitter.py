@@ -1,6 +1,8 @@
+from array import array
 from datetime import datetime
+from random import randint
 from termcolor import colored # pre import colored
-# Notify prog run via main file
+
 text = colored('-Program Intializing-', 'blue', attrs=['reverse', 'blink'])
 print(text)
 
@@ -84,7 +86,8 @@ def Prompts():
   global wait
   global Error
   
-  print(text)
+  text = colored('-Program Started-', 'green', attrs=['reverse', 'blink'])
+  print(text) # print prog started text
 
   while True:
     try:
@@ -132,6 +135,9 @@ def Prompts():
         Repeat = int(do.split(" ")[3])
         wait = wait * 60
         break
+    
+    elif do == "auto":
+      auto()
       
     elif do == "exit":
         exit()
@@ -188,8 +194,6 @@ def genTweet():
     
     return nasa.nivl.search("earth")
   
-  
-  
   elif prompted == "folder": # Generate a tweet using dalle api
     import glob, random
     
@@ -242,9 +246,6 @@ def genTweet():
       return (str("Sometimes the best times are when me and "+na1+" "+random.choice(["hold hands","fuck","cry","enjoy life","destroy a box of cerial","get wet"])+".")), Empty
       
 
-
-
-
 # =================== Main ===================
 
 def main():
@@ -275,21 +276,111 @@ def main():
       twe = colored('- Tweeted '+str(i+1)+"/"+str(Repeat)+" -\n", 'cyan', attrs=[])
       print (twe + "--> " + str(tweeted))
     
+    
       for i in tqdm(range(int(wait))):
         time.sleep(1)
   
   prompted = ""
-  Prompts()
+  return
   
+def auto():
   
+  import json
+  
+  global prompted
+  global wait
+  global api
+  global Error
+  global Repeat
+  
+  actions = []
+
+  
+  while True:
+    
+    choice = randint(1,5)
+    
+    if choice == 1: # decide randomly on what to tweet then tweet it
+      actions.append("Tweeted a random tweet")
+      prompt = randint(1,3)
+      if prompt == 1:
+        prompted = "joke"
+      elif prompt == 2:
+        prompted = "quote"
+      elif prompt == 3:
+        prompted = "sentence"
+      
+      Repeat = 1
+      wait = 0
+      main()
+      
+    if choice == 2: # follow back people who follow you
+      for follower in tweepy.Cursor(api.get_followers).items():
+        if not follower.following:
+            actions.append(f"Followed {follower.name} back")
+            follower.follow()
+            
+    if choice == 3: # respond to mentions
+      actions.append("Retrieving mentions")
+    for tweet in tweepy.Cursor(api.mentions_timeline, tweet_mode="extended").items():
+        if not tweet.favorited:
+            actions.append(f"Favoriting {tweet.id} - {tweet.text}")
+            tweet.favorite()
+        if not tweet.user.following:
+            actions.append(f"Following {tweet.user.name}")
+            tweet.user.follow()
+        if not tweet.in_reply_to_status_id:
+            actions.append(f"Answering {tweet.id} - {tweet.text}")
+            api.update_status(
+                status = f"@{tweet.user.screen_name} Thanks for the mention!",
+                in_reply_to_status_id = tweet.id,
+            )
+        if tweet.in_reply_to_status_id is not None:
+            continue
+        if any(keyword in tweet.text.lower() for keyword in ["joke", "jokes"]):
+            actions.append(("Answering to {tweet.user.name}"))
+
+            if not tweet.user.following:
+                tweet.user.follow()
+
+            api.update_status(
+                status="@" + tweet.user.screen_name + " " + choice(["love you","johhny appleseed could do better"]),
+                in_reply_to_status_id=tweet.id,
+            )
+            
+    if choice == 4: # retweet tweets from timeline
+      
+      for tweet in tweepy.Cursor(api.home_timeline, tweet_mode="extended").items():
+        try:
+          tweet.retweet()
+          actions.append("Retweeted a tweet from timeline")
+        except tweepy.TweepError as e:
+          print(e.reason)
+          
+    if choice == 5: # like tweets from timeline
+      for tweet in tweepy.Cursor(api.home_timeline, tweet_mode="extended").items():
+        if not tweet.favorited:
+          tweet.favorite()
+          actions.append("Favorited a tweet from timeline")
+    
+    print("Latest Action:"+str(actions[len(actions)-1]))
+    
+    
+
+    with open('autoLog.txt', 'w') as filehandle:
+      json.dump(array.toList(), filehandle)
+    
+    print("Waiting 60 seconds")
+    time.sleep(2)
+    
+            
+            
 
 wait = 0 # init global wait var
 prompted = "" # init global prompt var
 Repeat = 0 # init global repeat var
 Error = "" # init global error var
 api = "" # init global api var
-
-text = colored('-Program Started-', 'green', attrs=['reverse', 'blink'])
 
 Twitter() # call twitter API
 Prompts() # call prompts function to start program
