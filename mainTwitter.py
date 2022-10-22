@@ -149,7 +149,7 @@ def Prompts():
     elif do == "api":
         Twitter()
     
-    elif do == "limit":
+    elif do == "limits":
       twitterRates()
     
     elif do == "error":
@@ -383,7 +383,7 @@ def auto():
             
     if choice == 4: # retweet tweets from timeline
       
-      for tweet in tweepy.Cursor(api.home_timeline).items(randint(1,20)):
+      for tweet in (tweepy.Cursor(api.home_timeline).items(randint(1,20))):
         try:
           tweet.retweet()
           actions.append(f"Retweeted {tweet.text} from timeline")
@@ -391,7 +391,7 @@ def auto():
           pass
           
     if choice == 5: # like tweets from timeline
-      for tweet in tweepy.Cursor(api.home_timeline).items(randint(1,20)):
+      for tweet in (tweepy.Cursor(api.home_timeline).items(randint(1,20))):
         if not tweet.favorited:
           tweet.favorite()
           actions.append(f"Favorited {tweet.text} from timeline")
@@ -400,7 +400,7 @@ def auto():
           
           
     if choice == 6: # comment on tweets from timeline
-       for tweet in tweepy.Cursor(api.home_timeline).items(randint(1,20)):
+       for tweet in (tweepy.Cursor(api.home_timeline).items(randint(1,20))):
          if not tweet.in_reply_to_status_id:
             prompted = "sentence"
             api.update_status(
@@ -443,9 +443,10 @@ def auto():
       except:
         pass
       
-    print("Waiting 60 seconds")
-    time.sleep(2)
-    #time.sleep(randint(10,120))
+    sleep = randint(10,10)
+    
+    for i in tqdm(range(int(sleep))):
+        time.sleep(1)
     
             
             
