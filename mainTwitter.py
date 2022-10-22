@@ -330,7 +330,7 @@ def auto():
   
   while True:
     
-    choice = randint(1,7)
+    choice = randint(1,9)
     print("Action:"+str(choice))
     
     if choice == 1: # decide randomly on what to tweet then tweet it
@@ -419,6 +419,26 @@ def auto():
           break
         except:
           pass
+    
+    if choice == 8: # dm followers
+      prompted = "joke"
+      for follower in tweepy.Cursor(api.get_followers).items():
+        if follower.following:
+            actions.append(f"DM'd {follower.name} (follower) randomly")
+            api.send_direct_message(recipient_id = follower.id, text = str(genTweet()[0]))
+    
+    if choice == 9: # dm random people
+      prompted = "joke"
+      tweets = list(tweepy.Cursor(api.search_users, q="a", tweet_mode='extended').items(randint(1,20)))
+      random.shuffle(tweets)
+      for tweet in tweets:
+        try:
+          actions.append(f"DM'd {tweet.name} randomly")
+          api.send_direct_message(recipient_id = tweet.id, text = str(genTweet()[0]))
+          break
+        except:
+          pass
+      
 
     try:
       if lastAction != actions[len(actions)-1]:
