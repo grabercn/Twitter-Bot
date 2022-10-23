@@ -467,10 +467,8 @@ def auto():
             
 # save actions to a file and wait for a random amount of time  
 actions = ["hi","hello"]
-txt_file = open("autoLog.txt", "w+")
-for items in actions:
-  txt_file.writelines(str(items)+"\n")
-txt_file.close()
+with open('autoLog.txt', 'w') as my_list_file:
+  my_list_file.writelines("%s\n" % lang for lang in actions)
 
 wait = 0 # init global wait var
 prompted = "" # init global prompt var
