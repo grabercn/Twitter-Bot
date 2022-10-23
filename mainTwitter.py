@@ -32,6 +32,8 @@ from credentials import consumer_key, consumer_secret, access_token, access_toke
 import time
 from termcolor import colored
 from tqdm import tqdm
+import os
+from os import sys
 
 # =============== Imports End =================
 
@@ -268,7 +270,7 @@ def genTweet():
     
   elif prompted == "name": # Generate a tweet using name generator
       import names
-      return str(names.get_full_name), Empty
+      return str(names.get_full_name()), Empty
       
 
 # =================== Main ===================
@@ -454,21 +456,25 @@ def auto():
       
       
       
-      
-      
-      
     
       
-    sleep = randint(1,100)
+    # save actions to a file and wait for a random amount of time  
+    fullpath = os.path.join(os.path.dirname(sys.argv[0]), 'autoLog.txt')
+    list_file = open(fullpath, "w")
+    for action in actions:
+      i = len(actions)
+      list_file.write((str(i))+". "+action+" ("+curTime()+") \n")
+    list_file.close()  
+    
+      
+    sleep = randint(1,200)
     
     for i in tqdm(range(int(sleep))):
         time.sleep(1)
     
             
-# save actions to a file and wait for a random amount of time  
-actions = ["hi","hello"]
-with open('autoLog.txt', 'w') as my_list_file:
-  my_list_file.writelines("%s\n" % lang for lang in actions)
+
+  
 
 wait = 0 # init global wait var
 prompted = "" # init global prompt var
