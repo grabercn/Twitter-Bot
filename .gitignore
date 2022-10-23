@@ -3,3 +3,4 @@ credentials.py
 *.json
 autoLog.txt
 *.pyc
+__pycache__/credentials.cpython-310.pyc

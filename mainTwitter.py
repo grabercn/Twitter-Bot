@@ -3,6 +3,12 @@
 # - Date: 10/22/2022
 # - Version: 0.5 beta
 # - To do: fix sentence structure, add more jokes, add more quotes, add more tweets, add more features
+# + implement blacklist 
+
+# issues:
+# fix multi commenting on same run
+# improve error handeling
+# fix follow random not being random
 
 # =============== Imports =================
 from array import array
@@ -246,12 +252,8 @@ def genTweet():
 
     gvn_names=["John","Grace","Freddy Fazbear","Donald J Trump","Barack Obama","Joey Spats","Seyour64","Andrew NoVatsney","John McAffee","Joseph","Dan","Dan Beard","Dan Bread",
                "Danny","Pickachu","Charizard","Elon Musk","Jeff Bezos"]
-    gvn_verbs=["tried","had fun","did not have fun","enjoyed","fucked","thoroughly enjoyed","was ecstatic","tried to jump",
-               "eventually ended up","loved","was eloped when","got wet","got eaten when trying","'s first time","has never",
-               "sometimes like/s to take nice walks. On these walks, sometimes there are a bunch of weird people in suits",
-               "smacked,","licked","hugged","smothered","got saucy","meated","creamed","melted"]
-    gvn_nouns=["eating", "writing", "watching a movie", "reading", "sleeping", "dancing","beating","breaking","fucking","sliding","cumming","dating","frisking","slipping",
-               "running","slapping","biting","kissing"]
+    gvn_verbs=["had fun"]
+    gvn_nouns=["writing"]
 
     na1 =(random.choice(gvn_names))
     na2 = (random.choice(gvn_names))
@@ -260,27 +262,13 @@ def genTweet():
     no1 =(random.choice(gvn_nouns))
     no2 = (random.choice(gvn_nouns))
 
-    rand = randint(1,10)
+    rand = randint(1, 1)
     if rand == 1:
       return (str(na1+" "+ve1+" "+no1+".")), Empty
-    if rand == 2:
-      return (str(na1+" "+ve1+" "+no1+" while "+na2+" was "+no2+".")), Empty
-    if rand == 3:
-      return (str(na1+" and "+na2+" "+ve1+" "+no1+" while "+no2+".")), Empty
-    if rand == 4:
-      return (str(na1+" + "+na2+" were "+no1+" together while "+no2+".")), Empty
-    if rand == 5:
-      return (str(no1+" while "+na1+" is "+no2+" is "+random.choice(["hard.","sad.","frustrating.","cute.","lovely.","despicable.","sickening.","hot.","sexy."]))), Empty
-    if rand == 6:
-      return (str("Remember when "+na1+" and "+na2+" were "+no1+"?")), Empty
-    if rand == 7:
-      return (str("Have you ever tried "+no1+" while "+no2+"?")), Empty
-    if rand == 8:
-      return (str("Image if "+na1+" and "+na2+" hated each other.")), Empty
-    if rand == 9:
-      return (str("Does "+na1+" know that "+na2+" and me "+na2+" are lovers?")), Empty
-    if rand == 10:
-      return (str("Sometimes the best times are when me and "+na1+" "+random.choice(["hold hands","fuck","cry","enjoy life","destroy a box of cerial","get wet"])+".")), Empty
+    
+  elif prompted == "name": # Generate a tweet using name generator
+      import names
+      return str(names.get_full_name), Empty
       
 
 # =================== Main ===================
@@ -322,7 +310,6 @@ def main():
   
 def auto():
   
-  import names
   import random
   
   global prompted
@@ -334,21 +321,24 @@ def auto():
   actions = []
   lastAction = []
 
-  
+  # Run the program repeatedly - loop start
   while True:
     
-    choice = randint(1,9)
+    choice = randint(1,8)
     print("Action:"+str(choice))
     
     if choice == 1: # decide randomly on what to tweet then tweet it
-      actions.append("Tweeted a random tweet")
-      prompt = randint(1,3)
+      prompt = randint(1,4)
       if prompt == 1:
         prompted = "joke"
       elif prompt == 2:
         prompted = "quote"
       elif prompt == 3:
         prompted = "sentence"
+      elif prompt == 4:
+        prompted = "name"
+        
+      actions.append("Tweeted a random "+prompted)
       
       Repeat = 1
       wait = 0
@@ -390,7 +380,7 @@ def auto():
             
     if choice == 4: # retweet tweets from timeline
       
-      for tweet in (tweepy.Cursor(api.home_timeline).items(randint(1,20))):
+      for tweet in (tweepy.Cursor(api.home_timeline).items(randint(1,5))):
         try:
           tweet.retweet()
           actions.append(f"Retweeted {tweet.text} from timeline")
@@ -398,16 +388,16 @@ def auto():
           pass
           
     if choice == 5: # like tweets from timeline
-      for tweet in (tweepy.Cursor(api.home_timeline).items(randint(1,20))):
+      for tweet in (tweepy.Cursor(api.home_timeline).items(randint(1,5))):
         if not tweet.favorited:
           tweet.favorite()
-          actions.append(f"Favorited {tweet.text} from timeline")
+          actions.append(f"Liked {tweet.text} from timeline")
         else:
           pass
           
           
     if choice == 6: # comment on tweets from timeline
-       for tweet in (tweepy.Cursor(api.home_timeline).items(randint(1,20))):
+       for tweet in (tweepy.Cursor(api.home_timeline).items(randint(1,5))):
          if not tweet.in_reply_to_status_id:
             prompted = "sentence"
             api.update_status(
@@ -415,9 +405,10 @@ def auto():
                 in_reply_to_status_id = tweet.id,
             )
             actions.append(f"Commented on {tweet.text} from timeline")
+            break
     
     if choice ==7 : # follow random people
-      tweets = list(tweepy.Cursor(api.search_users, q="a", tweet_mode='extended').items(randint(1,20)))
+      tweets = list(tweepy.Cursor(api.search_users, q="a", tweet_mode='extended').items(randint(1,100)))
       random.shuffle(tweets)
       for tweet in tweets:
         try:
@@ -431,9 +422,13 @@ def auto():
       prompted = "joke"
       for follower in tweepy.Cursor(api.get_followers).items():
         if follower.following:
-            actions.append(f"DM'd {follower.name} (follower) randomly")
-            api.send_direct_message(recipient_id = follower.id, text = str(genTweet()[0]))
+            send = randint(1,3)
+            if send == 1:
+              actions.append(f"DM'd {follower.name} (follower) randomly")
+              api.send_direct_message(recipient_id = follower.id, text = str(genTweet()[0]))
+              break
     
+    """
     if choice == 9: # dm random people
       prompted = "joke"
       tweets = list(tweepy.Cursor(api.search_users, q="a", tweet_mode='extended').items(randint(1,20)))
@@ -445,6 +440,7 @@ def auto():
           break
         except:
           pass
+      """
       
 
     try:
@@ -461,22 +457,20 @@ def auto():
       
       
       
-    # save actions to a file and wait for a random amount of time  
     
-    with open("autoLog.txt", "w") as txt_file:
-      try:
-        for line in actions:
-            txt_file.write(" ".join(line) + "\n") # works with any number of elements in a line
-      except:
-        pass
       
-    sleep = randint(10,10)
+    sleep = randint(1,100)
     
     for i in tqdm(range(int(sleep))):
         time.sleep(1)
     
             
-            
+# save actions to a file and wait for a random amount of time  
+actions = ["hi","hello"]
+txt_file = open("autoLog.txt", "w+")
+for items in actions:
+  txt_file.writelines(str(items)+"\n")
+txt_file.close()
 
 wait = 0 # init global wait var
 prompted = "" # init global prompt var
