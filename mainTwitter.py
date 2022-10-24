@@ -9,6 +9,8 @@
 # fix multi commenting on same run
 # improve error handeling
 # fix follow random not being random
+# already favorite tweet error
+# duplicate tweet post error
 
 # =============== Imports =================
 from array import array
@@ -459,12 +461,15 @@ def auto():
     
       
     # save actions to a file and wait for a random amount of time  
-    fullpath = os.path.join(os.path.dirname(sys.argv[0]), 'autoLog.txt')
-    list_file = open(fullpath, "w")
-    for action in actions:
-      i = len(actions)
-      list_file.write((str(i))+". "+action+" ("+curTime()+") \n")
-    list_file.close()  
+    try:
+      fullpath = os.path.join(os.path.dirname(sys.argv[0]), 'autoLog.txt')
+      list_file = open(fullpath, "w")
+      for action in actions:
+        i = len(actions)
+        list_file.write((str(i))+". "+action+" ("+curTime()+") \n")
+      list_file.close() 
+    except UnicodeEncodeError:
+      print(colored("File write error (most likely invalid unicode char)","red"))
     
       
     sleep = randint(1,200)
