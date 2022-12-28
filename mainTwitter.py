@@ -39,11 +39,58 @@ from os import sys
 
 # =============== Imports End =================
 
+# =============== Init Chat Bot Vars =================
+global chatbot
+#global trainer
+
 # =============== Helper Functions ===============
 def curTime(): # get current time and return it (str)
   now = datetime.now()
   return now.strftime("%H:%M:%S")
+
+def initChatBot():
+  from chatgpt_wrapper import ChatGPT
+
+  global chatbot
   
+  chatbot = ChatGPT()
+  
+  """
+  global chatbot
+  global trainer
+  
+  from chatterbot import ChatBot
+  from chatterbot.trainers import ChatterBotCorpusTrainer
+
+  chatbot = ChatBot('Ron Obvious')
+
+  # Create a new trainer for the chatbot
+  trainer = ChatterBotCorpusTrainer(chatbot)
+
+  # Train the chatbot based on the english corpus
+  trainer.train("chatterbot.corpus.english")
+  """
+
+def getChatBotResponse(question):
+  global chatbot
+  
+  try:
+    chatbot
+  except NameError:
+    print("Chatbot not initialized, initializing now...\nThis May Take A While... \n")
+    initChatBot()
+    
+  return str(chatbot.ask(question))
+  
+  """
+  try:
+    chatbot
+  except NameError: 
+    print("Chatbot not initialized, initializing now...\nThis May Take A While... \n")
+    initChatBot()
+    initChatBot()
+  return str(chatbot.get_response(question))
+  """
 
 def getPromptedParam(prompted): # get prompted param and return it (str)
   try:
@@ -273,6 +320,15 @@ def genTweet():
   elif prompted == "name": # Generate a tweet using name generator
       import names
       return str(names.get_full_name()), Empty
+  
+  elif prompted == "chatbot":
+    import random
+    
+    bot_choices = ["tell me a short joke", "give me a short quote", "tell me a interesting but short fact"]
+    a = random.choice(bot_choices)
+    
+    return getChatBotResponse(a), Empty
+    
       
 
 # =================== Main ===================
@@ -298,7 +354,7 @@ def main():
       try: 
         api.update_status(status = tweeted) # Create a tweet
       except Exception as e:
-        print(colored("- Error - \nError posting Tweet "+str(i)+"/"+str(Repeat), "red", attrs=[]))
+        print(colored("- Error - \nError posting Tweet "+str(i+1)+"/"+str(Repeat), "red", attrs=[]))
         Error = e
       
       
@@ -328,11 +384,11 @@ def auto():
   # Run the program repeatedly - loop start
   while True:
     
-    choice = randint(1,8)
+    choice = 6 #randint(1,8)
     print("Action:"+str(choice))
     
     if choice == 1: # decide randomly on what to tweet then tweet it
-      prompt = randint(1,4)
+      prompt = 5 #randint(1,4)
       if prompt == 1:
         prompted = "joke"
       elif prompt == 2:
@@ -341,8 +397,10 @@ def auto():
         prompted = "sentence"
       elif prompt == 4:
         prompted = "name"
+      elif prompt == 5:
+        prompted = "chatbot"
         
-      actions.append("Tweeted a random "+prompted)
+      #actions.append("Tweeted a random "+prompted)
       
       Repeat = 1
       wait = 0
@@ -403,9 +461,12 @@ def auto():
     if choice == 6: # comment on tweets from timeline
        for tweet in (tweepy.Cursor(api.home_timeline).items(randint(1,5))):
          if not tweet.in_reply_to_status_id:
-            prompted = "sentence"
+            #prompted = "sentence"
+            
+            tweetText = getChatBotResponse(tweet.text)
+            
             api.update_status(
-                status = f"@{tweet.user.screen_name} {str(genTweet()[0])}",
+                status = f"@{tweet.user.screen_name} {tweetText}",
                 in_reply_to_status_id = tweet.id,
             )
             actions.append(f"Commented on {tweet.text} from timeline")
