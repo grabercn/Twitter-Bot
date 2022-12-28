@@ -456,17 +456,17 @@ def auto():
     except IndexError:
       print(colored("No actions yet", 'yellow'))
       
-      
-      
-    
-      
     # save actions to a file and wait for a random amount of time  
     try:
       fullpath = os.path.join(os.path.dirname(sys.argv[0]), 'autoLog.txt')
-      list_file = open(fullpath, "w")
+      list_file = open(fullpath, "a")
+      
+      inc = 0
       for action in actions:
-        i = len(actions)
-        list_file.write((str(i))+". "+action+" ("+curTime()+") \n")
+        inc = inc + 1
+        if inc == 1:
+          list_file.write("#################### New Session ("+curTime()+") #################### \n")
+        list_file.write((str(inc))+". "+action+" ("+curTime()+") \n")
       list_file.close() 
     except UnicodeEncodeError:
       print(colored("File write error (most likely invalid unicode char)","red"))
