@@ -463,7 +463,18 @@ def auto():
          if not tweet.in_reply_to_status_id:
             #prompted = "sentence"
             
-            tweetText = getChatBotResponse(tweet.text)
+            tweetText = getChatBotResponse("respond to this: "+tweet.text[0:140])
+            if "sorry" in tweetText.lower() or "AI" in tweetText.lower():
+              tweetText = getChatBotResponse("get the topic in one word of this: "+tweet.text[0:140])
+              act = randint(1,2)
+              if act == 1:
+                tweetText = getChatBotResponse("make a question about: "+tweetText)
+              elif act == 2:
+                tweetText = getChatBotResponse("write a sentence about: "+tweet.text[0:140])
+            else:
+              tweetText = getChatBotResponse("generate a random short joke")
+                
+            tweetText = tweetText[0:140]
             
             api.update_status(
                 status = f"@{tweet.user.screen_name} {tweetText}",
@@ -484,13 +495,24 @@ def auto():
           pass
     
     if choice == 8: # dm followers
-      prompted = "joke"
+      #prompted = "joke"
       for follower in tweepy.Cursor(api.get_followers).items():
         if follower.following:
             send = randint(1,3)
             if send == 1:
-              actions.append(f"DM'd {follower.name} (follower) randomly")
-              api.send_direct_message(recipient_id = follower.id, text = str(genTweet()[0]))
+              messages = api.get_direct_messages()
+              latest = messages[0].message_create['message_data']['text']
+              print (latest)
+              if latest == None:
+                actions.append(f"DM'd {follower.name} (follower) a greeting randomly")
+                api.send_direct_message(recipient_id = follower.id, text = str(getChatBotResponse("give me a short greeting")))
+                break
+              else:
+                prompted = "chatbot"
+                actions.append(f"DM'd {follower.name} (follower) a joke randomly")
+                api.send_direct_message(recipient_id = follower.id, text = str(genTweet()[0]))
+                break
+              
               break
     
     """
